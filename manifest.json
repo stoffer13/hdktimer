@@ -1,0 +1,11 @@
+{
+  "name": "HDK timer",
+  "version": "1.0",
+  "description": "Times .hdk pages",
+  "permissions": ["storage", "webNavigation", "*://*.hdk/*"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "manifest_version": 2
+}
