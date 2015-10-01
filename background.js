@@ -1,12 +1,19 @@
 var pendingRequests = [];
 
-function handleStoreCallback() 
-{
-  console.log("Storage Succesful - " + reqs.totalDuration);
-}
+function onCompletedListener(details) {
+    var before = pendingRequests[details.tabId];
+    if (before != undefined) {
+      var duration = details.timeStamp - before.timeStamp;
+      var trackDto = {timeStamp: before.timeStamp, duration: duration};
 
-function handleGetCallback(result) {
+      console.log(details.url + " - " + duration + " ms");
+
+      chrome.storage.local.get("qwe", function (result) {
         var storage = result.qwe;
+        if (storage === undefined) {
+          storage = {};
+          storage.totalDuration = 0;
+        }
         if (storage[before.url] === undefined) {
           storage[before.url] = {};
           console.log("not an object");
@@ -19,22 +26,16 @@ function handleGetCallback(result) {
         }
         reqs.requests.push(trackDto);
         reqs.totalDuration += duration;
+        storage.totalDuration += duration;
         
-        chrome.storage.local.set({"qwe": storage}, handleStoreCallback);
+        chrome.storage.local.set({"qwe": storage}, function () {  
+          console.log("Storage Succesful - " + reqs.totalDuration + " - " + storage.totalDuration);
+        });
 
-      }
-
-function onCompletedListener(details) {
-    var before = pendingRequests[details.tabId];
-    if (before != undefined) {
-      var duration = details.timeStamp - before.timeStamp;
-      var trackDto = {timeStamp: before.timeStamp, duration: duration};
-
-      console.log(details.url + " - " + duration + " ms");
-
-      chrome.storage.local.get("qwe", handleGetCallback);
+      });
     }
   }
+
 chrome.webNavigation.onBeforeNavigate.addListener(
   function(details) {
     pendingRequests[details.tabId] = details;
@@ -46,3 +47,12 @@ chrome.webNavigation.onCompleted.addListener(
   onCompletedListener,
   { url: [{hostSuffix: ".hdk"}] }
 );
+
+
+function storageChangeListener(changes, areaName) {
+  if (areaName === "local") {
+    console.log(changes);
+   
+  }
+}
+chrome.storage.onChanged.addListener(storageChangeListener);
