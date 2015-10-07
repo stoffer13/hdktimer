@@ -47,12 +47,3 @@ chrome.webNavigation.onCompleted.addListener(
   onCompletedListener,
   { url: [{hostSuffix: ".hdk"}] }
 );
-
-
-function storageChangeListener(changes, areaName) {
-  if (areaName === "local") {
-    console.log(changes);
-   
-  }
-}
-chrome.storage.onChanged.addListener(storageChangeListener);
